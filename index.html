@@ -96,7 +96,7 @@
 
   <!-- Footer -->
   <footer class="text-center text-gray-600 text-sm py-4 border-t border-gray-300 bg-white/60 backdrop-blur-sm">
-    <p class="font-semibold text-orange-600">Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare, Hare Rama, Hare Rama, Rama Rama, Hare Hare </p>
+    <p  id="message" class="hidden font-semibold text-orange-600">Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare, Hare Rama, Hare Rama, Rama Rama, Hare Hare </p>
     <p>
       Made with 💖 for <span class="font-semibold text-indigo-600">Evisa Support</span> by 
       <span class="font-semibold text-gray-800">Suraj Sahu</span>
@@ -109,6 +109,7 @@
     const textInput = document.getElementById("textInput");
     const resultBox = document.getElementById("resultBox");
     const resultText = document.getElementById("resultText");
+    const message = document.getElementById("message");
 
     async function handleEncryptDecrypt(endpoint) {
       const text = textInput.value.trim();
@@ -116,7 +117,7 @@
         alert("Please enter text first!");
         return;
       }
-
+      message.classList.remove("hidden");
       resultBox.classList.remove("hidden");
       resultText.textContent = "⏳ Processing...";
 
