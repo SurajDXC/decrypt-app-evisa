@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚙️ Excel & String Encrypt/Decrypt Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 min-h-screen font-sans flex flex-col justify-between">
+<h1 class="text-3xl font-bold text-center text-indigo-700 mt-6">Tools For Evisa Support ⚙️</h2>
+
+  <!-- Main Content -->
+  <main class="flex-grow flex items-center justify-center p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+      <!-- Excel Decrypt Section -->
+      <div class="bg-white/90 shadow-xl rounded-2xl p-8 backdrop-blur-sm border border-gray-200">
+        <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">🔐 Excel Decrypt Tool</h2>
+        
+        <form action="/decrypt" method="post" enctype="multipart/form-data" class="space-y-6">
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Select Excel file</label>
+            <input 
+              type="file" 
+              name="excel" 
+              required 
+              class="block w-full text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 p-2"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Fields to decrypt (comma separated)</label>
+            <input 
+              type="text" 
+              name="fields" 
+              value="applicantName, mobileNo"
+              placeholder="applicantName, mobileNo" 
+              required
+              class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 placeholder-gray-400"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md"
+          >
+            Decrypt Excel
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+          Supported format: <span class="font-semibold text-gray-700">.xlsx</span> or <span class="font-semibold text-gray-700">.xls</span>
+        </p>
+      </div>
+
+      <!-- String Encrypt/Decrypt Section -->
+      <div class="bg-white/90 shadow-xl rounded-2xl p-8 backdrop-blur-sm border border-gray-200">
+        <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">🔏 String Encrypt / Decrypt</h2>
+
+        <div class="space-y-6">
+          <!-- Input -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Enter text</label>
+            <textarea 
+              id="textInput"
+              placeholder="Enter text to encrypt or decrypt..."
+              class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 placeholder-gray-400 h-24"
+            ></textarea>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex justify-between gap-3">
+            <button 
+              id="encryptBtn"
+              class="w-1/2 bg-green-600 text-white font-semibold py-2.5 rounded-lg hover:bg-green-700 transition duration-200 shadow-md"
+            >
+              Encrypt
+            </button>
+            <button 
+              id="decryptBtn"
+              class="w-1/2 bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md"
+            >
+              Decrypt
+            </button>
+          </div>
+
+          <!-- Output -->
+          <div id="resultBox" class="hidden border border-gray-200 rounded-lg bg-gray-50 p-3">
+            <p class="text-sm font-medium text-gray-600">Result:</p>
+            <p id="resultText" class="text-gray-800 font-semibold break-all mt-1"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-600 text-sm py-4 border-t border-gray-300 bg-white/60 backdrop-blur-sm">
+    <p>
+      Made with 💖 for <span class="font-semibold text-indigo-600">Evisa Support</span> by 
+      <span class="font-semibold text-gray-800">Suraj Sahu</span>
+    </p>
+  </footer>
+
+  <script>
+    const encryptBtn = document.getElementById("encryptBtn");
+    const decryptBtn = document.getElementById("decryptBtn");
+    const textInput = document.getElementById("textInput");
+    const resultBox = document.getElementById("resultBox");
+    const resultText = document.getElementById("resultText");
+
+    async function handleEncryptDecrypt(endpoint) {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert("Please enter text first!");
+        return;
+      }
+
+      resultBox.classList.remove("hidden");
+      resultText.textContent = "⏳ Processing...";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        const data = await response.json();
+
+        if (data?.result) {
+          resultText.textContent = data.result;
+        } else {
+          resultText.textContent = "⚠️ Error: Invalid server response";
+        }
+      } catch (err) {
+        resultText.textContent = "❌ Error: " + err.message;
+      }
+    }
+
+    encryptBtn.addEventListener("click", () => handleEncryptDecrypt("/encrypt-str"));
+    decryptBtn.addEventListener("click", () => handleEncryptDecrypt("/decrypt-str"));
+  </script>
+
+</body>
+
+</html>
