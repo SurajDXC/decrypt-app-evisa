@@ -77,8 +77,13 @@ app.post("/encrypt-str", (req, res) => {
   }
 
   try {
-    const encrypted = encrypt(text, salt);
-    res.json({ result: encrypted });
+     let str = ``;
+    let list = text.split("\n").map(f => f.trim())
+    
+    list.forEach(field => {
+      str += encrypt(field, salt) + `<br>`;
+    })
+    res.json({ result: str });
   } catch (err) {
     res.status(500).json({ error: "Encryption failed", details: err.message });
   }
@@ -92,8 +97,14 @@ app.post("/decrypt-str", (req, res) => {
   }
 
   try {
-    const decrypted = decrypt(text, salt);
-    res.json({ result: decrypted });
+    let str = ``;
+    let list = text.split("\n").map(f => f.trim())
+    
+    list.forEach(field => {
+      str += decrypt(field, salt) + `<br>`;
+    })
+    // const decrypted = decrypt(text, salt);
+    res.json({ result: str });
   } catch (err) {
     res.status(500).json({ error: "Decryption failed", details: err.message });
   }

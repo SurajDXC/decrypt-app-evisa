@@ -132,7 +132,7 @@
         const data = await response.json();
 
         if (data?.result) {
-          resultText.textContent = data.result;
+          resultText.innerHTML = data.result;
         } else {
           resultText.textContent = "⚠️ Error: Invalid server response";
         }
