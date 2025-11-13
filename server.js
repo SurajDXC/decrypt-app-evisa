@@ -8,12 +8,27 @@ const fs = require("fs");
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-app.use(express.json()); // For parsing JSON requests from fetch()
-
+app.use(express.json()); // for fetch() JSON
 const iv = Buffer.alloc(16);
+
+// ======================
+// 🔹 Method 1: Default salt-based
+// ======================
 const salt = "86e8a5f51e12023bd2d9867a55fa61d1";
 
-// 🔹 Encrypt function
+// ======================
+// 🔹 Method 2: Suriname password-based
+// ======================
+const password = "T3(#.5u1p0rt.r0C";
+const surinameKey = crypto
+  .createHash("md5")
+  .update(password, "utf-8")
+  .digest("hex")
+  .toUpperCase();
+
+// ======================
+// 🔹 Utility functions
+// ======================
 function encrypt(text, key) {
   const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
   let encrypted = cipher.update(text, "utf8", "hex");
@@ -21,7 +36,6 @@ function encrypt(text, key) {
   return encrypted;
 }
 
-// 🔹 Decrypt function
 function decrypt(text, key) {
   const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
   let dec = decipher.update(text, "hex", "utf8");
@@ -29,26 +43,33 @@ function decrypt(text, key) {
   return dec;
 }
 
-// 🔹 Route for UI
+// ======================
+// 🔹 Serve HTML UI
+// ======================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 🔹 Route to handle Excel upload + decryption
+// ======================
+// 🔹 Excel Decrypt Route
+// ======================
 app.post("/decrypt", upload.single("excel"), (req, res) => {
   const filePath = req.file.path;
-  const fields = req.body.fields.split(",").map(f => f.trim());
+  const fields = req.body.fields.split(",").map((f) => f.trim());
+  const method = req.body.method || "default"; // "default" or "suriname"
+
+  const key = method === "suriname" ? surinameKey : salt;
 
   const workbook = xlsx.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   const data = xlsx.utils.sheet_to_json(sheet);
 
-  data.forEach(row => {
-    fields.forEach(field => {
+  data.forEach((row) => {
+    fields.forEach((field) => {
       if (row[field]) {
         try {
-          row[field] = decrypt(row[field], salt);
+          row[field] = decrypt(row[field], key);
         } catch (err) {
           row[field] = null;
         }
@@ -69,55 +90,50 @@ app.post("/decrypt", upload.single("excel"), (req, res) => {
   });
 });
 
-// 🔹 String Encrypt API (for frontend)
+// ======================
+// 🔹 String Encrypt API
+// ======================
 app.post("/encrypt-str", (req, res) => {
-  const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: "No text provided" });
-  }
+  const { text, method } = req.body;
+  if (!text) return res.status(400).json({ error: "No text provided" });
+
+  const key = method === "suriname" ? surinameKey : salt;
 
   try {
-     let str = ``;
-    let list = text.split("\n").map(f => f.trim())
-    
-    list.forEach(field => {
-      str += encrypt(field, salt) + `<br>`;
-    })
-    res.json({ result: str });
+    let list = text.split("\n").map((f) => f.trim());
+    let result = list.map((t) => encrypt(t, key)).join("<br>");
+    res.json({ result });
   } catch (err) {
     res.status(500).json({ error: "Encryption failed", details: err.message });
   }
 });
 
-// 🔹 String Decrypt API (for frontend)
+// ======================
+// 🔹 String Decrypt API
+// ======================
 app.post("/decrypt-str", (req, res) => {
-  const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: "No text provided" });
-  }
+  const { text, method } = req.body;
+  if (!text) return res.status(400).json({ error: "No text provided" });
+
+  const key = method === "suriname" ? surinameKey : salt;
 
   try {
-    let str = ``;
-    let list = text.split("\n").map(f => f.trim())
-    
-    list.forEach(field => {
-      str += decrypt(field, salt) + `<br>`;
-    })
-    // const decrypted = decrypt(text, salt);
-    res.json({ result: str });
+    let list = text.split("\n").map((f) => f.trim());
+    let result = list.map((t) => decrypt(t, key)).join("<br>");
+    res.json({ result });
   } catch (err) {
     res.status(500).json({ error: "Decryption failed", details: err.message });
   }
 });
 
-
+// ======================
 process.on("uncaughtException", (err) => {
   console.error("💥 Uncaught Exception:", err);
 });
-
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason) => {
   console.error("⚠️ Unhandled Rejection:", reason);
 });
 
-
-app.listen(3000, () => console.log("✅ Server running at http://localhost:3000"));
+app.listen(3000, () =>
+  console.log("✅ Server running at http://localhost:3000")
+);
