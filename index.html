@@ -5,85 +5,383 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>⚙️ Excel & String Encrypt/Decrypt Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+      --primary-bg: #ffffff;
+      --secondary-bg: #f8f9fa;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --border-color: #e0e0e0;
+      --accent-primary: #6366f1;
+      --accent-secondary: #10b981;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --gradient-start: #e0e7ff;
+      --gradient-mid: #e9d5ff;
+      --gradient-end: #fce7f3;
+    }
+
+    html[data-theme="dark"] {
+      --primary-bg: #0f172a;
+      --secondary-bg: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --border-color: #334155;
+      --accent-primary: #818cf8;
+      --accent-secondary: #34d399;
+      --card-bg: rgba(30, 41, 59, 0.9);
+      --gradient-start: #1e3a8a;
+      --gradient-mid: #581c87;
+      --gradient-end: #831843;
+    }
+
+    html[data-theme="pink"] {
+      --primary-bg: #fff5f7;
+      --secondary-bg: #ffe4e9;
+      --text-primary: #831843;
+      --text-secondary: #be185d;
+      --border-color: #fbcfe8;
+      --accent-primary: #ec4899;
+      --accent-secondary: #f43f5e;
+      --card-bg: rgba(255, 245, 247, 0.95);
+      --gradient-start: #fce7f3;
+      --gradient-mid: #fbcfe8;
+      --gradient-end: #f9a8d4;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-primary);
+      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Smooth gradient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+      opacity: 0.5;
+      z-index: -1;
+      transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .theme-toggle {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--card-bg);
+      padding: 0.5rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .theme-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.75rem;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.9rem;
+    }
+
+    .theme-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transform: scale(1.05);
+    }
+
+    .theme-btn:hover:not(.active) {
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    /* Card animations */
+    .card {
+      background: var(--card-bg);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-color: var(--border-color);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Input animations */
+    input, textarea, select {
+      background-color: var(--secondary-bg) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none !important;
+      border-color: var(--accent-primary) !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+      transform: scale(1.01);
+    }
+
+    /* Button animations */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    /* Label styling */
+    label {
+      color: var(--text-primary);
+      transition: color 0.3s ease;
+    }
+
+    /* Header animation */
+    h1, h2 {
+      color: var(--accent-primary);
+      transition: color 0.3s ease;
+      animation: slideInDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    main > div {
+      animation: fadeInUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .card {
+      animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.3s; }
+
+    /* Result box animation */
+    #resultBox {
+      animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Footer styling */
+    footer {
+      background: var(--card-bg);
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+    }
+
+    #message {
+      color: var(--accent-primary);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Loading animation */
+    .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 min-h-screen font-sans flex flex-col justify-between">
+<body class="min-h-screen flex flex-col justify-between">
 
-<h1 class="text-3xl font-bold text-center text-indigo-700 mt-6">
-  Tools For Evisa Support ⚙️
-</h1>
+<header class="sticky top-0 z-50 backdrop-blur-md bg-opacity-80" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+  <div class="flex items-center justify-between px-6 py-4">
+    <h1 class="text-3xl font-bold">
+      Tools For Evisa Support ⚙️
+    </h1>
+    <div class="theme-toggle">
+      <button class="theme-btn active" data-theme="light" title="Light Theme">☀️ Light</button>
+      <button class="theme-btn" data-theme="dark" title="Dark Theme">🌙 Dark</button>
+      <button class="theme-btn" data-theme="pink" title="Pink Theme">💖 Pink</button>
+    </div>
+  </div>
+</header>
 
-<main class="flex-grow flex items-center justify-center p-6">
+<main class="flex-grow flex items-center justify-center p-6 py-12">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
 
     <!-- Excel Decrypt Tool -->
-    <div class="bg-white/90 shadow-xl rounded-2xl p-8 backdrop-blur-sm border border-gray-200">
-      <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">🔐 Excel Decrypt Tool</h2>
+    <div class="card shadow-xl rounded-2xl p-8 border">
+      <h2 class="text-2xl font-bold text-center mb-6">🔐 Excel Decrypt Tool</h2>
 
       <form action="/decrypt" method="post" enctype="multipart/form-data" class="space-y-6">
         <div>
-          <label class="block text-gray-700 font-medium mb-2">Select Excel file</label>
-          <input type="file" name="excel" required class="w-full border border-gray-300 rounded-lg p-2 bg-gray-50">
+          <label class="block font-medium mb-2">Select Excel file</label>
+          <input type="file" name="excel" required class="w-full border rounded-lg p-3">
         </div>
 
         <div>
-          <label class="block text-gray-700 font-medium mb-2">Fields to decrypt (comma separated)</label>
-          <input type="text" name="fields" value="applicantName, passportNumber" required class="w-full border border-gray-300 rounded-lg p-2">
+          <label class="block font-medium mb-2">Fields to decrypt (comma separated)</label>
+          <input type="text" name="fields" value="applicantName, passportNumber" required class="w-full border rounded-lg p-3">
         </div>
 
         <div>
-          <label class="block text-gray-700 font-medium mb-2">Select Decryption Method</label>
-          <select name="method" class="w-full border border-gray-300 rounded-lg p-2">
+          <label class="block font-medium mb-2">Select Decryption Method</label>
+          <select name="method" class="w-full border rounded-lg p-3">
             <option value="default">Default</option>
             <option value="suriname">Suriname</option>
           </select>
         </div>
 
-        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700">
+        <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold">
           Decrypt Excel
         </button>
       </form>
     </div>
 
     <!-- String Encrypt/Decrypt -->
-    <div class="bg-white/90 shadow-xl rounded-2xl p-8 backdrop-blur-sm border border-gray-200">
-      <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">🔏 String Encrypt / Decrypt</h2>
+    <div class="card shadow-xl rounded-2xl p-8 border">
+      <h2 class="text-2xl font-bold text-center mb-6">🔏 String Encrypt / Decrypt</h2>
 
       <div class="space-y-6">
         <div>
-          <label class="block text-gray-700 font-medium mb-2">Enter text</label>
-          <textarea id="textInput" placeholder="Enter text to encrypt or decrypt..." class="w-full border border-gray-300 rounded-lg p-2 h-24"></textarea>
+          <label class="block font-medium mb-2">Enter text</label>
+          <textarea id="textInput" placeholder="Enter text to encrypt or decrypt..." class="w-full border rounded-lg p-3 h-24 resize-none"></textarea>
         </div>
 
         <div>
-          <label class="block text-gray-700 font-medium mb-2">Select Method</label>
-          <select id="methodSelect" class="w-full border border-gray-300 rounded-lg p-2">
+          <label class="block font-medium mb-2">Select Method</label>
+          <select id="methodSelect" class="w-full border rounded-lg p-3">
             <option value="default">Default</option>
             <option value="suriname">Suriname</option>
           </select>
         </div>
 
         <div class="flex gap-3">
-          <button id="encryptBtn" class="w-1/2 bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700">Encrypt</button>
-          <button id="decryptBtn" class="w-1/2 bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700">Decrypt</button>
+          <button id="encryptBtn" class="w-1/2 btn-primary py-3 rounded-lg font-semibold">Encrypt</button>
+          <button id="decryptBtn" class="w-1/2 btn-primary py-3 rounded-lg font-semibold">Decrypt</button>
         </div>
 
-        <div id="resultBox" class="hidden border border-gray-200 rounded-lg bg-gray-50 p-3">
-          <p class="text-sm font-medium text-gray-600">Result:</p>
-          <p id="resultText" class="text-gray-800 font-semibold break-all mt-1"></p>
+        <div id="resultBox" class="hidden border rounded-lg p-4" style="background: var(--secondary-bg);">
+          <p class="text-sm font-medium" style="color: var(--text-secondary);">Result:</p>
+          <p id="resultText" class="font-semibold break-all mt-2" style="color: var(--text-primary);"></p>
         </div>
       </div>
     </div>
   </div>
 </main>
 
-<footer class="text-center text-gray-600 text-sm py-4 border-t border-gray-300 bg-white/60 backdrop-blur-sm">
-  <p id="message" class="font-semibold text-orange-600">
+<footer class="text-center text-sm py-6 border-t" style="border-color: var(--border-color);">
+  <p id="message" class="font-semibold mb-2">
     Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare, Hare Rama, Hare Rama, Rama Rama, Hare Hare
   </p>
-  <p>Made with 💖 for <span class="text-indigo-600 font-semibold">Evisa Support</span> by <span class="font-semibold">Suraj Sahu</span></p>
+  <p style="color: var(--text-secondary);">Made with 💖 for <span class="font-semibold" style="color: var(--accent-primary);">Evisa Support</span> by <span class="font-semibold">Suraj Sahu</span></p>
 </footer>
 
 <script>
+  // Theme Management
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  const htmlElement = document.documentElement;
+  
+  // Load saved theme or default to dark
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  htmlElement.setAttribute('data-theme', savedTheme);
+  updateActiveThemeButton(savedTheme);
+
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-theme');
+      htmlElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateActiveThemeButton(theme);
+    });
+  });
+
+  function updateActiveThemeButton(theme) {
+    themeButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-theme') === theme) {
+        btn.classList.add('active');
+      }
+    });
+  }
+
+  // Encrypt/Decrypt functionality
   const encryptBtn = document.getElementById("encryptBtn");
   const decryptBtn = document.getElementById("decryptBtn");
   const textInput = document.getElementById("textInput");
