@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚙️ Excel & String Encrypt/Decrypt Tool</title>
+  <title>✂️ String Splitter Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -219,25 +219,6 @@
       animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
     }
 
-    .card:nth-child(1) { animation-delay: 0.1s; }
-    .card:nth-child(2) { animation-delay: 0.3s; }
-
-    /* Result box animation */
-    #resultBox {
-      animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
     /* Footer styling */
     footer {
       background: var(--card-bg);
@@ -259,17 +240,6 @@
     /* Smooth scrolling */
     html {
       scroll-behavior: smooth;
-    }
-
-    /* Loading animation */
-    .spinner {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
 
     /* Sidebar Styles */
@@ -337,11 +307,11 @@
   <div class="main-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="/" class="sidebar-tab active">
+      <a href="/" class="sidebar-tab">
         <span>🔐</span>
         <span>Decryption Tool</span>
       </a>
-      <a href="/splitter.html" class="sidebar-tab">
+      <a href="/splitter.html" class="sidebar-tab active">
         <span>✂️</span>
         <span>String Splitter</span>
       </a>
@@ -350,63 +320,78 @@
     <!-- Content Area -->
     <div class="content-area">
       <div class="p-6 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl mx-auto">
-
-          <!-- Excel Decrypt Tool -->
+        <div class="max-w-7xl mx-auto">
           <div class="card shadow-xl rounded-2xl p-8 border">
-            <h2 class="text-2xl font-bold text-center mb-6">🔐 Excel Decrypt Tool</h2>
+            <h2 class="text-2xl font-bold text-center mb-6">✂️ String Splitter Tool</h2>
 
-            <form action="/decrypt" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Left Column: Input and Options -->
+              <div class="space-y-6">
+                <!-- Input String -->
+                <div>
+                  <label class="block font-medium mb-2">Input String</label>
+                  <textarea id="splitterInput" placeholder="Enter string to split..." class="w-full border rounded-lg p-3 h-64 resize-none"></textarea>
+                </div>
+
+                <!-- Splitting Method -->
+                <div>
+                  <label class="block font-medium mb-2">Splitting Method</label>
+                  <select id="splitMethod" class="w-full border rounded-lg p-3">
+                    <option value="character">Split by Character</option>
+                    <option value="regex">Split by Regular Expression</option>
+                    <option value="length">Split by Length</option>
+                    <option value="parts">Split in Multiple Parts</option>
+                  </select>
+                </div>
+
+                <!-- Method-specific options -->
+                <div id="characterOptions" class="method-options">
+                  <label class="block font-medium mb-2">Split Character</label>
+                  <input type="text" id="splitChar" value=" " class="w-full border rounded-lg p-3" placeholder="Enter split character (default: space)">
+                </div>
+
+                <div id="regexOptions" class="method-options hidden">
+                  <label class="block font-medium mb-2">Regular Expression Pattern</label>
+                  <input type="text" id="regexPattern" value="\s+" class="w-full border rounded-lg p-3" placeholder="e.g., \s+ for whitespace">
+                </div>
+
+                <div id="lengthOptions" class="method-options hidden">
+                  <label class="block font-medium mb-2">Fragment Length</label>
+                  <input type="number" id="fragmentLength" value="10" min="1" class="w-full border rounded-lg p-3" placeholder="Number of characters per fragment">
+                </div>
+
+                <div id="partsOptions" class="method-options hidden">
+                  <label class="block font-medium mb-2">Number of Parts</label>
+                  <input type="number" id="numParts" value="2" min="1" class="w-full border rounded-lg p-3" placeholder="Number of parts to split into">
+                </div>
+
+                <!-- Output Options -->
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <label class="block font-medium mb-2 text-sm">Join With</label>
+                    <input type="text" id="joinChar" value="\n" class="w-full border rounded-lg p-3" placeholder="\n">
+                  </div>
+                  <div>
+                    <label class="block font-medium mb-2 text-sm">Left Wrapper</label>
+                    <input type="text" id="leftWrapper" value="" class="w-full border rounded-lg p-3" placeholder='"'>
+                  </div>
+                  <div>
+                    <label class="block font-medium mb-2 text-sm">Right Wrapper</label>
+                    <input type="text" id="rightWrapper" value="" class="w-full border rounded-lg p-3" placeholder='"'>
+                  </div>
+                </div>
+
+                <button id="splitBtn" class="w-full btn-primary py-3 rounded-lg font-semibold">
+                  Split String
+                </button>
+              </div>
+
+              <!-- Right Column: Result -->
               <div>
-                <label class="block font-medium mb-2">Select Excel file</label>
-                <input type="file" name="excel" required class="w-full border rounded-lg p-3">
-              </div>
-
-              <div>
-                <label class="block font-medium mb-2">Fields to decrypt (comma separated)</label>
-                <input type="text" name="fields" value="applicantName, passportNumber" required class="w-full border rounded-lg p-3">
-              </div>
-
-              <div>
-                <label class="block font-medium mb-2">Select Decryption Method</label>
-                <select name="method" class="w-full border rounded-lg p-3">
-                  <option value="default">Default</option>
-                  <option value="suriname">Suriname</option>
-                </select>
-              </div>
-
-              <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold">
-                Decrypt Excel
-              </button>
-            </form>
-          </div>
-
-          <!-- String Encrypt/Decrypt -->
-          <div class="card shadow-xl rounded-2xl p-8 border">
-            <h2 class="text-2xl font-bold text-center mb-6">🔏 String Encrypt / Decrypt</h2>
-
-            <div class="space-y-6">
-              <div>
-                <label class="block font-medium mb-2">Enter text</label>
-                <textarea id="textInput" placeholder="Enter text to encrypt or decrypt..." class="w-full border rounded-lg p-3 h-24 resize-none"></textarea>
-              </div>
-
-              <div>
-                <label class="block font-medium mb-2">Select Method</label>
-                <select id="methodSelect" class="w-full border rounded-lg p-3">
-                  <option value="default">Default</option>
-                  <option value="suriname">Suriname</option>
-                </select>
-              </div>
-
-              <div class="flex gap-3">
-                <button id="encryptBtn" class="w-1/2 btn-primary py-3 rounded-lg font-semibold">Encrypt</button>
-                <button id="decryptBtn" class="w-1/2 btn-primary py-3 rounded-lg font-semibold">Decrypt</button>
-              </div>
-
-              <div id="resultBox" class="hidden border rounded-lg p-4" style="background: var(--secondary-bg);">
-                <p class="text-sm font-medium" style="color: var(--text-secondary);">Result:</p>
-                <p id="resultText" class="font-semibold break-all mt-2" style="color: var(--text-primary);"></p>
+                <div class="border rounded-lg p-4 h-full" style="background: var(--secondary-bg);">
+                  <p class="text-sm font-medium mb-2" style="color: var(--text-secondary);">Result:</p>
+                  <pre id="splitterResult" class="font-mono text-sm whitespace-pre-wrap break-all h-[calc(100%-2rem)] overflow-y-auto" style="color: var(--text-primary);"></pre>
+                </div>
               </div>
             </div>
           </div>
@@ -451,37 +436,78 @@
     });
   }
 
-  // Encrypt/Decrypt functionality
-  const encryptBtn = document.getElementById("encryptBtn");
-  const decryptBtn = document.getElementById("decryptBtn");
-  const textInput = document.getElementById("textInput");
-  const resultBox = document.getElementById("resultBox");
-  const resultText = document.getElementById("resultText");
-  const methodSelect = document.getElementById("methodSelect");
+  // String Splitter functionality
+  const splitMethodSelect = document.getElementById('splitMethod');
+  const methodOptions = document.querySelectorAll('.method-options');
+  const splitBtn = document.getElementById('splitBtn');
+  const splitterInput = document.getElementById('splitterInput');
+  const splitterResultBox = document.getElementById('splitterResultBox');
+  const splitterResult = document.getElementById('splitterResult');
 
-  async function handleEncryptDecrypt(endpoint) {
-    const text = textInput.value.trim();
-    if (!text) return alert("Please enter text first!");
-    const method = methodSelect.value;
+  // Show/hide method-specific options
+  splitMethodSelect.addEventListener('change', () => {
+    methodOptions.forEach(opt => opt.classList.add('hidden'));
+    const method = splitMethodSelect.value;
+    document.getElementById(`${method}Options`).classList.remove('hidden');
+  });
 
-    resultBox.classList.remove("hidden");
-    resultText.textContent = "⏳ Processing...";
+  // Split button handler
+  splitBtn.addEventListener('click', () => {
+    const input = splitterInput.value;
+    if (!input) {
+      alert('Please enter a string to split');
+      return;
+    }
+
+    const method = splitMethodSelect.value;
+    const joinChar = document.getElementById('joinChar').value.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+    const leftWrapper = document.getElementById('leftWrapper').value;
+    const rightWrapper = document.getElementById('rightWrapper').value;
+
+    let parts = [];
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, method })
-      });
-      const data = await response.json();
-      resultText.innerHTML = data.result || "⚠️ Error: No result returned.";
-    } catch (err) {
-      resultText.textContent = "❌ Error: " + err.message;
-    }
-  }
+      switch(method) {
+        case 'character':
+          const splitChar = document.getElementById('splitChar').value || ' ';
+          parts = input.split(splitChar);
+          break;
 
-  encryptBtn.addEventListener("click", () => handleEncryptDecrypt("/encrypt-str"));
-  decryptBtn.addEventListener("click", () => handleEncryptDecrypt("/decrypt-str"));
+        case 'regex':
+          const regexPattern = document.getElementById('regexPattern').value || '\\s+';
+          const regex = new RegExp(regexPattern);
+          parts = input.split(regex);
+          break;
+
+        case 'length':
+          const fragmentLength = parseInt(document.getElementById('fragmentLength').value) || 10;
+          for (let i = 0; i < input.length; i += fragmentLength) {
+            parts.push(input.substr(i, fragmentLength));
+          }
+          break;
+
+        case 'parts':
+          const numParts = parseInt(document.getElementById('numParts').value) || 2;
+          const partLength = Math.ceil(input.length / numParts);
+          for (let i = 0; i < numParts; i++) {
+            const start = i * partLength;
+            const part = input.substr(start, partLength);
+            if (part) parts.push(part);
+          }
+          break;
+      }
+
+      // Apply wrappers
+      const wrappedParts = parts.map(part => `${leftWrapper}${part}${rightWrapper}`);
+      
+      // Join and display
+      const result = wrappedParts.join(joinChar);
+      splitterResult.textContent = result;
+
+    } catch (error) {
+      splitterResult.textContent = 'Error: ' + error.message;
+    }
+  });
 </script>
 </body>
 </html>

@@ -50,6 +50,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+app.get("/splitter.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "splitter.html"));
+});
+
 // ======================
 // 🔹 Excel Decrypt Route
 // ======================
