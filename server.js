@@ -95,6 +95,46 @@ app.post("/decrypt", upload.single("excel"), (req, res) => {
 });
 
 // ======================
+// 🔹 Excel Encrypt Route
+// ======================
+app.post("/encrypt", upload.single("excel"), (req, res) => {
+  const filePath = req.file.path;
+  const fields = req.body.fields.split(",").map((f) => f.trim());
+  const method = req.body.method || "default"; // "default" or "suriname"
+
+  const key = method === "suriname" ? surinameKey : salt;
+
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const data = xlsx.utils.sheet_to_json(sheet);
+
+  data.forEach((row) => {
+    fields.forEach((field) => {
+      if (row[field]) {
+        try {
+          row[field] = encrypt(String(row[field]), key);
+        } catch (err) {
+          row[field] = null;
+        }
+      }
+    });
+  });
+
+  const newSheet = xlsx.utils.json_to_sheet(data);
+  const newWb = xlsx.utils.book_new();
+  xlsx.utils.book_append_sheet(newWb, newSheet, "Sheet1");
+
+  const outFile = `output_encrypted_${Date.now()}.xlsx`;
+  xlsx.writeFile(newWb, outFile);
+
+  res.download(outFile, () => {
+    fs.unlinkSync(filePath);
+    fs.unlinkSync(outFile);
+  });
+});
+
+// ======================
 // 🔹 String Encrypt API
 // ======================
 app.post("/encrypt-str", (req, res) => {
@@ -138,6 +178,6 @@ process.on("unhandledRejection", (reason) => {
   console.error("⚠️ Unhandled Rejection:", reason);
 });
 
-app.listen(3000, () =>
-  console.log("✅ Server running at http://localhost:3000")
+app.listen(3001, () =>
+  console.log("✅ Server running at http://localhost:3001")
 );
