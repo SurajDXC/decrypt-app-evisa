@@ -44,6 +44,58 @@ function decrypt(text, key) {
 }
 
 // ======================
+// 🔹 Date parsing and formatting
+// ======================
+function parseDate(val) {
+  if (!val && val !== 0) return null;
+
+  // Handle Date objects returned by xlsx for proper date cells
+  if (val instanceof Date) {
+    if (isNaN(val.getTime())) return null;
+    const y = val.getUTCFullYear();
+    const m = String(val.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(val.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  const str = String(val).trim();
+
+  // Already YYYY-MM-DD — return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+
+  // M/D/YYYY or MM/DD/YYYY  →  month / day / year  (e.g. 1/21/1977, 3/15/1985)
+  // Logic: slash-separated → first part is MONTH, second is DAY
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+    const [mo, da, yr] = str.split('/');
+    return `${yr}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`;
+  }
+
+  // DD-MM-YYYY  →  day - month - year  (e.g. 01-12-2020, 07-07-2021)
+  // Logic: dash-separated → first part is DAY, second is MONTH
+  if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(str)) {
+    const [da, mo, yr] = str.split('-');
+    const day = parseInt(da, 10);
+    const month = parseInt(mo, 10);
+    // Sanity check: if month part exceeds 12 it must actually be the day → swap
+    if (month > 12) {
+      return `${yr}-${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}`;
+    }
+    return `${yr}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  // YYYY/MM/DD
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(str)) {
+    return str.replace(/\//g, '-');
+  }
+
+  // Return original if no format matched
+  return str;
+}
+
+// Array of date column names to automatically format
+const dateColumns = ["Dob", "App Date", "DOB", "AppDate", "app_date", "dob"];
+
+// ======================
 // 🔹 Serve HTML UI
 // ======================
 app.get("/", (req, res) => {
@@ -77,6 +129,13 @@ app.post("/decrypt", upload.single("excel"), (req, res) => {
         } catch (err) {
           row[field] = null;
         }
+      }
+    });
+    
+    // Format date columns
+    Object.keys(row).forEach((col) => {
+      if (dateColumns.includes(col)) {
+        row[col] = parseDate(row[col]);
       }
     });
   });
@@ -117,6 +176,13 @@ app.post("/encrypt", upload.single("excel"), (req, res) => {
         } catch (err) {
           row[field] = null;
         }
+      }
+    });
+    
+    // Format date columns
+    Object.keys(row).forEach((col) => {
+      if (dateColumns.includes(col)) {
+        row[col] = parseDate(row[col]);
       }
     });
   });
